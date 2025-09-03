@@ -42,6 +42,10 @@ async def create_user(session: AsyncSession, user_data: Dict[str, Any]) -> Tuple
 
     if "registration_date" not in user_data:
         user_data["registration_date"] = datetime.now(timezone.utc)
+    
+    # Set default balance if not provided
+    if "balance" not in user_data:
+        user_data["balance"] = 0.0
 
     # Use PostgreSQL upsert to avoid IntegrityError on concurrent inserts
     stmt = (
@@ -89,6 +93,52 @@ async def update_user_language(
     stmt = update(User).where(User.user_id == user_id).values(language_code=lang_code)
     result = await session.execute(stmt)
     return result.rowcount > 0
+
+
+async def get_user_balance(session: AsyncSession, user_id: int) -> float:
+    """Get user's current balance."""
+    stmt = select(User.balance).where(User.user_id == user_id)
+    result = await session.execute(stmt)
+    balance = result.scalar_one_or_none()
+    return balance if balance is not None else 0.0
+
+
+async def update_user_balance(session: AsyncSession, user_id: int, new_balance: float) -> bool:
+    """Set user's balance to a specific amount."""
+    stmt = update(User).where(User.user_id == user_id).values(balance=new_balance)
+    result = await session.execute(stmt)
+    return result.rowcount > 0
+
+
+async def add_to_user_balance(session: AsyncSession, user_id: int, amount: float) -> Optional[float]:
+    """Add amount to user's balance and return new balance."""
+    user = await get_user_by_id(session, user_id)
+    if user:
+        new_balance = (user.balance or 0.0) + amount
+        user.balance = new_balance
+        await session.flush()
+        await session.refresh(user)
+        logging.info(f"Added {amount} to user {user_id} balance. New balance: {new_balance}")
+        return new_balance
+    return None
+
+
+async def subtract_from_user_balance(session: AsyncSession, user_id: int, amount: float) -> Optional[float]:
+    """Subtract amount from user's balance if sufficient funds available. Returns new balance or None if insufficient."""
+    user = await get_user_by_id(session, user_id)
+    if user:
+        current_balance = user.balance or 0.0
+        if current_balance >= amount:
+            new_balance = current_balance - amount
+            user.balance = new_balance
+            await session.flush()
+            await session.refresh(user)
+            logging.info(f"Subtracted {amount} from user {user_id} balance. New balance: {new_balance}")
+            return new_balance
+        else:
+            logging.warning(f"Insufficient balance for user {user_id}. Required: {amount}, Available: {current_balance}")
+            return None
+    return None
 
 
 async def get_banned_users(session: AsyncSession) -> List[User]:

@@ -52,6 +52,14 @@ async def send_main_menu(target_event: Union[types.Message,
 
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
+    # Get user balance
+    user_balance = 0.0
+    try:
+        user_balance = await user_dal.get_user_balance(session, user_id)
+    except Exception as e:
+        logging.error(f"Failed to get user balance for user {user_id}: {e}")
+        user_balance = 0.0
+
     show_trial_button_in_menu = False
     if settings.TRIAL_ENABLED:
         if hasattr(
@@ -65,7 +73,7 @@ async def send_main_menu(target_event: Union[types.Message,
                 "Method has_had_any_subscription is missing in SubscriptionService for send_main_menu!"
             )
 
-    text = _(key="main_menu_greeting", user_name=user_full_name)
+    text = _(key="main_menu_greeting", user_name=user_full_name, balance=f"{user_balance:.2f}")
     reply_markup = get_main_menu_inline_keyboard(current_lang, i18n, settings,
                                                  show_trial_button_in_menu)
 
@@ -155,7 +163,8 @@ async def start_command_handler(message: types.Message,
             "last_name": user.last_name,
             "language_code": current_lang,
             "referred_by_id": referred_by_user_id,
-            "registration_date": datetime.now(timezone.utc)
+            "registration_date": datetime.now(timezone.utc),
+            "balance": 0.0
         }
         try:
             db_user, created = await user_dal.create_user(session, user_data_to_create)

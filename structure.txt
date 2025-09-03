@@ -1,0 +1,117 @@
+Структура папок
+Серийный номер тома: 2028-9CC5
+C:.
+|   .env.example
+|   .gitignore
+|   docker-compose.yml
+|   Dockerfile
+|   main.py
+|   README.md
+|   requirements.txt
+|   structure.txt
+|   
++---.github
+|   \---workflows
+|           dev-docker-build.yml
+|           docker-publish.yml
+|           
++---bot
+|   |   main_bot.py
+|   |   routers.py
+|   |   
+|   +---app
+|   |   +---controllers
+|   |   |       dispatcher_controller.py
+|   |   |       __init__.py
+|   |   |       
+|   |   +---factories
+|   |   |       build_services.py
+|   |   |       __init__.py
+|   |   |       
+|   |   \---web
+|   |           web_server.py
+|   |           __init__.py
+|   |           
+|   +---filters
+|   |       admin_filter.py
+|   |       
+|   +---handlers
+|   |   |   inline_mode.py
+|   |   |   
+|   |   +---admin
+|   |   |   |   broadcast.py
+|   |   |   |   common.py
+|   |   |   |   logs_admin.py
+|   |   |   |   payments.py
+|   |   |   |   statistics.py
+|   |   |   |   sync_admin.py
+|   |   |   |   user_management.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---promo
+|   |   |           bulk.py
+|   |   |           create.py
+|   |   |           manage.py
+|   |   |           __init__.py
+|   |   |           
+|   |   \---user
+|   |           payment.py
+|   |           promo_user.py
+|   |           referral.py
+|   |           start.py
+|   |           subscription.py
+|   |           trial_handler.py
+|   |           __init__.py
+|   |           
+|   +---keyboards
+|   |   \---inline
+|   |           admin_keyboards.py
+|   |           user_keyboards.py
+|   |           
+|   +---middlewares
+|   |       action_logger_middleware.py
+|   |       ban_check_middleware.py
+|   |       db_session.py
+|   |       i18n.py
+|   |       profile_sync.py
+|   |       
+|   +---services
+|   |       crypto_pay_service.py
+|   |       notification_service.py
+|   |       panel_api_service.py
+|   |       panel_webhook_service.py
+|   |       promo_code_service.py
+|   |       referral_service.py
+|   |       stars_service.py
+|   |       subscription_service.py
+|   |       tribute_service.py
+|   |       yookassa_service.py
+|   |       
+|   +---states
+|   |       admin_states.py
+|   |       user_states.py
+|   |       
+|   \---utils
+|           date_utils.py
+|           message_queue.py
+|           __init__.py
+|           
++---config
+|       settings.py
+|       
++---db
+|   |   database_setup.py
+|   |   models.py
+|   |   
+|   \---dal
+|           message_log_dal.py
+|           panel_sync_dal.py
+|           payment_dal.py
+|           promo_code_dal.py
+|           subscription_dal.py
+|           user_dal.py
+|           
+\---locales
+        en.json
+        ru.json
+        
