@@ -268,7 +268,7 @@ async def pay_balance_callback_handler(
             "provider": "balance"
         }
         
-        payment = await payment_dal.create_payment(session, payment_data)
+        payment = await payment_dal.create_payment_record(session, payment_data)
         
         # Deduct from balance
         new_balance = await balance_service.subtract_balance(user_id, price)
