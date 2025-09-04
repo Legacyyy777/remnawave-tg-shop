@@ -22,7 +22,7 @@ async def show_terms_acceptance(
     settings: Settings,
     i18n_data: dict,
     session: AsyncSession,
-    subscription_service: SubscriptionService = None
+    subscription_service: "SubscriptionService" = None
 ):
     """Show terms acceptance dialog."""
     current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
@@ -51,7 +51,7 @@ async def handle_terms_accept(
     settings: Settings,
     i18n_data: dict,
     session: AsyncSession,
-    subscription_service: SubscriptionService = None
+    subscription_service: "SubscriptionService" = None
 ):
     """Handle terms acceptance."""
     user_id = callback.from_user.id
