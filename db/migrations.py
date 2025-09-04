@@ -10,6 +10,37 @@ from db.database_setup import get_async_session
 
 logger = logging.getLogger(__name__)
 
+
+async def _migrate_add_terms_accepted(session: AsyncSession):
+    """Add terms_accepted column to users table if it doesn't exist."""
+    try:
+        # Check if column already exists
+        result = await session.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'terms_accepted'
+        """))
+        existing_column = result.fetchone()
+        
+        if existing_column:
+            logger.info("Column 'terms_accepted' already exists in users table")
+            return
+        
+        # Add the column
+        await session.execute(text("""
+            ALTER TABLE users 
+            ADD COLUMN terms_accepted BOOLEAN NOT NULL DEFAULT FALSE
+        """))
+        await session.commit()
+        
+        logger.info("Successfully added 'terms_accepted' column to users table")
+        
+    except Exception as e:
+        logger.error(f"Error adding terms_accepted column: {e}")
+        await session.rollback()
+        raise
+
+
 # List of all migrations with their version numbers
 MIGRATIONS = [
     ("001_add_terms_accepted", _migrate_add_terms_accepted),
@@ -73,36 +104,6 @@ async def _mark_migration_applied(session: AsyncSession, migration_id: str):
         INSERT INTO migrations (migration_id) VALUES (:migration_id)
     """), {"migration_id": migration_id})
     await session.commit()
-
-
-async def _migrate_add_terms_accepted(session: AsyncSession):
-    """Add terms_accepted column to users table if it doesn't exist."""
-    try:
-        # Check if column already exists
-        result = await session.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name = 'users' AND column_name = 'terms_accepted'
-        """))
-        existing_column = result.fetchone()
-        
-        if existing_column:
-            logger.info("Column 'terms_accepted' already exists in users table")
-            return
-        
-        # Add the column
-        await session.execute(text("""
-            ALTER TABLE users 
-            ADD COLUMN terms_accepted BOOLEAN NOT NULL DEFAULT FALSE
-        """))
-        await session.commit()
-        
-        logger.info("Successfully added 'terms_accepted' column to users table")
-        
-    except Exception as e:
-        logger.error(f"Error adding terms_accepted column: {e}")
-        await session.rollback()
-        raise
 
 
 # Future migrations can be added here
