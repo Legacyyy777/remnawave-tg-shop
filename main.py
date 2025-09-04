@@ -8,6 +8,7 @@ from bot.main_bot import run_bot
 from config.settings import get_settings, Settings
 from db.database_setup import init_db, init_db_connection
 from db.migrations import run_migrations
+from aiogram import Bot
 
 
 async def main():
@@ -24,6 +25,15 @@ async def main():
     
     # Run database migrations
     await run_migrations(session_factory)
+
+    # Clear bot commands to remove the start button
+    try:
+        bot = Bot(token=settings.BOT_TOKEN)
+        await bot.delete_my_commands()
+        await bot.session.close()
+        logging.info("Bot commands cleared successfully")
+    except Exception as e:
+        logging.warning(f"Failed to clear bot commands: {e}")
 
     await run_bot(settings)
 
