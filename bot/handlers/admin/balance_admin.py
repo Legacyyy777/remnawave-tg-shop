@@ -48,11 +48,6 @@ async def handle_balance_management_callback(
     )
     await callback.answer()
     
-    await callback.message.answer(
-        text=_("admin_balance_user_prompt"),
-        parse_mode="HTML"
-    )
-    
     # Set state to wait for user input
     await state.set_state(BalanceManagementStates.waiting_for_user)
 
@@ -159,7 +154,7 @@ async def handle_user_input(
         parse_mode="HTML"
     )
     
-    await state.clear()
+    # Не очищаем state, так как данные о пользователе нужны для операций с балансом
 
 
 @router.callback_query(F.data == "admin_balance_add")
