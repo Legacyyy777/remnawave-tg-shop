@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from bot.main_bot import run_bot
 from config.settings import get_settings, Settings
 from db.database_setup import init_db, init_db_connection
+from db.migrations import run_migrations
 
 
 async def main():
@@ -20,6 +21,9 @@ async def main():
         return
 
     await init_db(settings, session_factory)
+    
+    # Run database migrations
+    await run_migrations()
 
     await run_bot(settings)
 
