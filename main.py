@@ -26,12 +26,16 @@ async def main():
     # Run database migrations
     await run_migrations(session_factory)
 
-    # Clear bot commands to remove the start button
+    # Clear bot commands and menu to remove the start button
     try:
         bot = Bot(token=settings.BOT_TOKEN)
         await bot.delete_my_commands()
+        await bot.delete_my_commands(scope="all")
+        await bot.delete_my_commands(scope="all_private_chats")
+        await bot.delete_my_commands(scope="all_group_chats")
+        await bot.delete_my_commands(scope="all_chat_administrators")
         await bot.session.close()
-        logging.info("Bot commands cleared successfully")
+        logging.info("Bot commands and menu cleared successfully")
     except Exception as e:
         logging.warning(f"Failed to clear bot commands: {e}")
 
