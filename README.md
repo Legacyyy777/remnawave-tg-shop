@@ -158,25 +158,21 @@ TRIBUTE_SKIP_NOTIFICATIONS=false
 1_MONTH_ENABLED=true
 RUB_PRICE_1_MONTH=150.0
 STARS_PRICE_1_MONTH=150
-TRIBUTE_LINK_1_MONTH=https://t.me/tribute/app?startapp=your_app_1m
 
 # 3 месяца
 3_MONTHS_ENABLED=true
 RUB_PRICE_3_MONTHS=400.0
 STARS_PRICE_3_MONTHS=400
-TRIBUTE_LINK_3_MONTHS=https://t.me/tribute/app?startapp=your_app_3m
 
 # 6 месяцев
 6_MONTHS_ENABLED=true
 RUB_PRICE_6_MONTHS=750.0
 STARS_PRICE_6_MONTHS=750
-TRIBUTE_LINK_6_MONTHS=https://t.me/tribute/app?startapp=your_app_6m
 
 # 12 месяцев
 12_MONTHS_ENABLED=true
 RUB_PRICE_12_MONTHS=1400.0
 STARS_PRICE_12_MONTHS=1400
-TRIBUTE_LINK_12_MONTHS=https://t.me/tribute/app?startapp=your_app_12m
 ```
 
 **Настройки панели Remnawave:**
