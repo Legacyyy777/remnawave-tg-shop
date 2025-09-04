@@ -23,7 +23,7 @@ async def main():
     await init_db(settings, session_factory)
     
     # Run database migrations
-    await run_migrations()
+    await run_migrations(session_factory)
 
     await run_bot(settings)
 

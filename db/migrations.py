@@ -47,11 +47,11 @@ MIGRATIONS = [
 ]
 
 
-async def run_migrations():
+async def run_migrations(session_factory):
     """Run all pending database migrations."""
     logger.info("Starting database migrations...")
     
-    async for session in get_async_session():
+    async for session in get_async_session(session_factory):
         try:
             # Create migrations table if it doesn't exist
             await _create_migrations_table(session)
