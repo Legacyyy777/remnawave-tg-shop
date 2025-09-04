@@ -394,6 +394,8 @@
   "balance_purchase_success": "✅ Покупка успешно оплачена с баланса!\n\nСписано: <b>{amount} ₽</b>\nОстаток: <b>{remaining} ₽</b>",
   "balance_top_up_success": "✅ Баланс успешно пополнен на <b>{amount} ₽</b>!\n\nНовый баланс: <b>{new_balance} ₽</b>",
   "balance_operation_failed": "❌ Ошибка операции с балансом. Попробуйте позже.",
+
+  "admin_balance_user_not_found": "❌ Пользователь не найден. Проверьте ID или имя пользователя.",
   "balance_invalid_amount": "❌ Неверная сумма. Введите положительное число.",
   "balance_negative_amount": "❌ Сумма не может быть отрицательной.",
   "balance_user_not_found": "❌ Пользователь не найден.",

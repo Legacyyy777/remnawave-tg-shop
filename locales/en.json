@@ -395,6 +395,8 @@
   "balance_purchase_success": "✅ Purchase successfully paid from balance!\n\nDeducted: <b>{amount} ₽</b>\nRemaining: <b>{remaining} ₽</b>",
   "balance_top_up_success": "✅ Balance successfully topped up by <b>{amount} ₽</b>!\n\nNew balance: <b>{new_balance} ₽</b>",
   "balance_operation_failed": "❌ Balance operation error. Please try again later.",
+
+  "admin_balance_user_not_found": "❌ User not found. Please check the user ID or username.",
   "balance_invalid_amount": "❌ Invalid amount. Enter a positive number.",
   "balance_negative_amount": "❌ Amount cannot be negative.",
   "balance_user_not_found": "❌ User not found.",

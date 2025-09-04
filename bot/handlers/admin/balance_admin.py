@@ -84,11 +84,22 @@ async def handle_user_input(
     try:
         # Try as user ID first
         if user_input.isdigit():
-            user = await get_user_by_id(session, int(user_input))
+            user_id = int(user_input)
+            logging.info(f"Searching for user by ID: {user_id}")
+            user = await get_user_by_id(session, user_id)
+            if user:
+                logging.info(f"Found user by ID: {user.user_id}, username: {user.username}, first_name: {user.first_name}")
+            else:
+                logging.warning(f"User with ID {user_id} not found")
         else:
             # Try as username
             clean_username = user_input.lstrip("@")
+            logging.info(f"Searching for user by username: {clean_username}")
             user = await get_user_by_username(session, clean_username)
+            if user:
+                logging.info(f"Found user by username: {user.user_id}, username: {user.username}, first_name: {user.first_name}")
+            else:
+                logging.warning(f"User with username {clean_username} not found")
     except Exception as e:
         logging.error(f"Error finding user {user_input}: {e}")
     
@@ -97,9 +108,17 @@ async def handle_user_input(
         return
     
     # Store user info in state
+    user_display = f"ID: {user.user_id}"
+    if user.username:
+        user_display += f" (@{user.username})"
+    if user.first_name:
+        user_display += f" - {user.first_name}"
+    if user.last_name:
+        user_display += f" {user.last_name}"
+    
     await state.update_data(
         target_user_id=user.user_id,
-        target_user_display=f"@{user.username}" if user.username else f"{user.first_name or 'Unknown'}"
+        target_user_display=user_display
     )
     
     # Get current balance
