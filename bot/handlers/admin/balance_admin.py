@@ -25,12 +25,20 @@ class BalanceManagementStates(StatesGroup):
 @router.callback_query(F.data == "admin_balance_management")
 async def handle_balance_management_callback(
     callback: CallbackQuery,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle balance management button click."""
-    lang = callback.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await callback.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
     
     await callback.message.edit_text(
         text=_("admin_balance_user_prompt"),
@@ -55,12 +63,20 @@ async def handle_user_input(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle user ID or username input for balance management."""
-    lang = message.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await message.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
     
     user_input = message.text.strip()
     
@@ -132,15 +148,23 @@ async def handle_user_input(
 async def handle_balance_add_callback(
     callback: CallbackQuery,
     state: FSMContext,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle add balance button click."""
-    lang = callback.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
     
-    data = await state.get_data()
-    user_display = data.get("target_user_display", "Unknown")
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await callback.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
+    
+    state_data = await state.get_data()
+    user_display = state_data.get("target_user_display", "Unknown")
     
     await callback.message.edit_text(
         text=_("admin_balance_add_prompt", user_display=user_display),
@@ -156,15 +180,23 @@ async def handle_balance_add_callback(
 async def handle_balance_subtract_callback(
     callback: CallbackQuery,
     state: FSMContext,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle subtract balance button click."""
-    lang = callback.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
     
-    data = await state.get_data()
-    user_display = data.get("target_user_display", "Unknown")
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await callback.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
+    
+    state_data = await state.get_data()
+    user_display = state_data.get("target_user_display", "Unknown")
     
     await callback.message.edit_text(
         text=_("admin_balance_subtract_prompt", user_display=user_display),
@@ -180,15 +212,23 @@ async def handle_balance_subtract_callback(
 async def handle_balance_set_callback(
     callback: CallbackQuery,
     state: FSMContext,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle set balance button click."""
-    lang = callback.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
     
-    data = await state.get_data()
-    user_display = data.get("target_user_display", "Unknown")
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await callback.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
+    
+    state_data = await state.get_data()
+    user_display = state_data.get("target_user_display", "Unknown")
     
     await callback.message.edit_text(
         text=_("admin_balance_set_prompt", user_display=user_display),
@@ -205,12 +245,20 @@ async def handle_add_amount_input(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle add amount input."""
-    lang = message.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await message.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
     
     try:
         amount = float(message.text.strip())
@@ -221,8 +269,8 @@ async def handle_add_amount_input(
         await message.answer(_("admin_balance_invalid_amount"))
         return
     
-    data = await state.get_data()
-    target_user_id = data.get("target_user_id")
+    state_data = await state.get_data()
+    target_user_id = state_data.get("target_user_id")
     
     if not target_user_id:
         await message.answer(_("admin_balance_user_not_found"))
@@ -252,12 +300,20 @@ async def handle_subtract_amount_input(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle subtract amount input."""
-    lang = message.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await message.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
     
     try:
         amount = float(message.text.strip())
@@ -268,8 +324,8 @@ async def handle_subtract_amount_input(
         await message.answer(_("admin_balance_invalid_amount"))
         return
     
-    data = await state.get_data()
-    target_user_id = data.get("target_user_id")
+    state_data = await state.get_data()
+    target_user_id = state_data.get("target_user_id")
     
     if not target_user_id:
         await message.answer(_("admin_balance_user_not_found"))
@@ -299,12 +355,20 @@ async def handle_set_amount_input(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    i18n: I18nMiddleware,
-    settings: Settings
+    settings: Settings,
+    **data
 ):
     """Handle set amount input."""
-    lang = message.from_user.language_code or settings.DEFAULT_LANGUAGE
-    _ = lambda key, **kwargs: i18n.gettext(lang, key, **kwargs)
+    i18n_data = data.get("i18n_data", {})
+    i18n = i18n_data.get("i18n_instance")
+    current_language = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    
+    if not i18n:
+        logging.error("I18n middleware not found in data")
+        await message.answer("Error: I18n not available")
+        return
+    
+    _ = lambda key, **kwargs: i18n.gettext(current_language, key, **kwargs)
     
     try:
         amount = float(message.text.strip())
@@ -315,8 +379,8 @@ async def handle_set_amount_input(
         await message.answer(_("admin_balance_invalid_amount"))
         return
     
-    data = await state.get_data()
-    target_user_id = data.get("target_user_id")
+    state_data = await state.get_data()
+    target_user_id = state_data.get("target_user_id")
     
     if not target_user_id:
         await message.answer(_("admin_balance_user_not_found"))
