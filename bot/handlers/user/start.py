@@ -75,7 +75,7 @@ async def send_main_menu(target_event: Union[types.Message,
 
     text = _(key="main_menu_greeting", user_name=user_full_name, balance=f"{user_balance:.2f}")
     reply_markup = get_main_menu_inline_keyboard(current_lang, i18n, settings,
-                                                 show_trial_button_in_menu)
+                                                 show_trial_button_in_menu, user_balance)
 
     target_message_obj: Optional[types.Message] = None
     if isinstance(target_event, types.Message):

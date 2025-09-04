@@ -579,6 +579,53 @@ async def pay_crypto_callback_handler(
         pass
 
 
+@router.callback_query(F.data == "insufficient_balance")
+async def insufficient_balance_callback_handler(
+        callback: types.CallbackQuery,
+        i18n_data: dict,
+        settings: Settings,
+        session: AsyncSession):
+    """Handle insufficient balance button click."""
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    if not i18n or not callback.message:
+        try:
+            await callback.answer(get_text("error_occurred_try_again"), show_alert=True)
+        except Exception:
+            pass
+        return
+
+    # Get user balance
+    from db.dal import user_dal
+    user_balance = 0.0
+    try:
+        user_balance = await user_dal.get_user_balance(session, callback.from_user.id)
+    except Exception as e:
+        logging.error(f"Failed to get user balance: {e}")
+        user_balance = 0.0
+
+    message_text = get_text("balance_insufficient_funds", 
+                           required="неизвестно", 
+                           available=user_balance)
+    
+    # Add button to go to balance management
+    from bot.keyboards.inline.user_keyboards import get_back_to_main_menu_markup
+    keyboard = get_back_to_main_menu_markup(current_lang, i18n)
+    
+    await callback.message.edit_text(
+        text=message_text,
+        reply_markup=keyboard,
+        parse_mode="HTML"
+    )
+    
+    try:
+        await callback.answer()
+    except Exception:
+        pass
+
+
 @router.callback_query(F.data == "main_action:subscribe")
 async def reshow_subscription_options_callback(callback: types.CallbackQuery,
                                                i18n_data: dict,

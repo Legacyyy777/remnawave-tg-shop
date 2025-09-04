@@ -9,9 +9,16 @@ def get_main_menu_inline_keyboard(
         lang: str,
         i18n_instance,
         settings: Settings,
-        show_trial_button: bool = False) -> InlineKeyboardMarkup:
+        show_trial_button: bool = False,
+        user_balance: float = 0.0) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
+
+    # Баланс - первая кнопка с отображением суммы
+    balance_button = InlineKeyboardButton(
+        text=_(key="menu_balance_with_amount", balance=user_balance),
+        callback_data="main_action:balance")
+    builder.row(balance_button)
 
     if show_trial_button and settings.TRIAL_ENABLED:
         builder.row(
@@ -42,11 +49,7 @@ def get_main_menu_inline_keyboard(
     promo_button = InlineKeyboardButton(
         text=_(key="menu_apply_promo_button"),
         callback_data="main_action:apply_promo")
-    balance_button = InlineKeyboardButton(
-        text=_(key="menu_balance_button"),
-        callback_data="main_action:balance")
     builder.row(referral_button, promo_button)
-    builder.row(balance_button)
 
     language_button = InlineKeyboardButton(
         text=_(key="menu_language_settings_inline"),
@@ -132,22 +135,15 @@ def get_payment_method_keyboard(months: int, price: float,
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     
-    # Add balance payment option if user has sufficient funds
+    # Только оплата с баланса
     if user_balance >= price:
         builder.button(text=_("pay_with_balance_button", amount=price, balance=user_balance),
                        callback_data=f"pay_balance:{months}:{price}")
+    else:
+        # Если недостаточно средств, показываем сообщение
+        builder.button(text=_("insufficient_balance_button", required=price, available=user_balance),
+                       callback_data="insufficient_balance")
     
-    if settings.STARS_ENABLED and stars_price is not None:
-        builder.button(text=_("pay_with_stars_button"),
-                       callback_data=f"pay_stars:{months}:{stars_price}")
-    if settings.TRIBUTE_ENABLED and tribute_url:
-        builder.button(text=_("pay_with_tribute_button"), url=tribute_url)
-    if settings.YOOKASSA_ENABLED:
-        builder.button(text=_("pay_with_yookassa_button"),
-                       callback_data=f"pay_yk:{months}:{price}")
-    if settings.CRYPTOPAY_ENABLED:
-        builder.button(text=_("pay_with_cryptopay_button"),
-                       callback_data=f"pay_crypto:{months}:{price}")
     builder.button(text=_(key="cancel_button"),
                    callback_data="main_action:subscribe")
     builder.adjust(1)
@@ -211,7 +207,7 @@ def get_balance_keyboard(lang: str, i18n_instance, tribute_url: Optional[str] = 
     
     if tribute_url:
         builder.button(
-            text=_(key="balance_top_up_button"),
+            text=_(key="balance_top_up_tribute_button"),
             url=tribute_url
         )
     
