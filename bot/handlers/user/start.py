@@ -230,7 +230,7 @@ async def start_command_handler(message: types.Message,
     # Check if user has accepted terms
     if not db_user.terms_accepted:
         from .terms import show_terms_acceptance
-        await show_terms_acceptance(message, settings, i18n_data, session)
+        await show_terms_acceptance(message, settings, i18n_data, session, subscription_service)
         return
     
     # Send welcome message if not disabled

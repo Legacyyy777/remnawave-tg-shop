@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
@@ -10,6 +11,9 @@ from bot.states.user_states import TermsAcceptanceStates
 from bot.keyboards.inline.user_keyboards import get_terms_acceptance_keyboard, get_back_to_main_menu_markup
 from db.dal import user_dal
 
+if TYPE_CHECKING:
+    from bot.services.subscription_service import SubscriptionService
+
 router = Router(name="user_terms_router")
 
 
@@ -17,7 +21,8 @@ async def show_terms_acceptance(
     target_event: Message | CallbackQuery,
     settings: Settings,
     i18n_data: dict,
-    session: AsyncSession
+    session: AsyncSession,
+    subscription_service: SubscriptionService = None
 ):
     """Show terms acceptance dialog."""
     current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
@@ -45,7 +50,8 @@ async def handle_terms_accept(
     state: FSMContext,
     settings: Settings,
     i18n_data: dict,
-    session: AsyncSession
+    session: AsyncSession,
+    subscription_service: SubscriptionService = None
 ):
     """Handle terms acceptance."""
     user_id = callback.from_user.id
@@ -69,7 +75,7 @@ async def handle_terms_accept(
         
         # Send success message and show main menu
         from .start import send_main_menu
-        await send_main_menu(callback, settings, i18n_data, None, session, is_edit=True)
+        await send_main_menu(callback, settings, i18n_data, subscription_service, session, is_edit=True)
         await callback.answer()
         
         logging.info(f"User {user_id} accepted terms of service")
