@@ -405,6 +405,9 @@
   "balance_operation_failed": "❌ Balance operation error. Please try again later.",
 
   "admin_balance_user_not_found": "❌ User not found. Please check the user ID or username.",
+  "admin_user_balance_label": "💰 <b>Balance:</b>",
+  "admin_user_balance_management_button": "💰 Balance Management",
+  "admin_balance_management_error": "❌ Error opening balance management",
   "balance_invalid_amount": "❌ Invalid amount. Enter a positive number.",
   "balance_negative_amount": "❌ Amount cannot be negative.",
   "balance_user_not_found": "❌ User not found.",

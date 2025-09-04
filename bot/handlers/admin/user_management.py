@@ -70,27 +70,33 @@ def get_user_card_keyboard(user_id: int, i18n_instance, lang: str) -> InlineKeyb
         callback_data=f"user_action:add_subscription:{user_id}"
     )
     
-    # Row 2: Block/Unblock and Message
+    # Row 2: Balance management
+    builder.button(
+        text=_(key="admin_user_balance_management_button", default="💰 Управление балансом"),
+        callback_data=f"user_action:balance_management:{user_id}"
+    )
     builder.button(
         text=_(key="admin_user_toggle_ban_button", default="🚫 Заблокировать/Разблокировать"),
         callback_data=f"user_action:toggle_ban:{user_id}"
     )
+    
+    # Row 3: Message and View actions
     builder.button(
         text=_(key="admin_user_send_message_button", default="✉️ Отправить сообщение"),
         callback_data=f"user_action:send_message:{user_id}"
     )
-    
-    # Row 3: View actions
     builder.button(
         text=_(key="admin_user_view_logs_button", default="📜 Действия пользователя"),
         callback_data=f"user_action:view_logs:{user_id}"
     )
+    
+    # Row 4: Refresh
     builder.button(
         text=_(key="admin_user_refresh_button", default="🔄 Обновить"),
         callback_data=f"user_action:refresh:{user_id}"
     )
     
-    # Row 4: Back button
+    # Row 5: Back button
     builder.button(
         text=_(key="admin_user_search_new_button", default="🔍 Найти другого"),
         callback_data="admin_action:users_management"
@@ -100,7 +106,7 @@ def get_user_card_keyboard(user_id: int, i18n_instance, lang: str) -> InlineKeyb
         callback_data="admin_action:main"
     )
     
-    builder.adjust(2, 2, 2, 2)
+    builder.adjust(2, 2, 2, 1, 2)
     return builder
 
 
@@ -129,6 +135,10 @@ async def format_user_card(user: User, session: AsyncSession,
     # Ban status
     ban_status = _("admin_user_status_banned", default="🚫 Заблокирован") if user.is_banned else _("admin_user_status_active", default="✅ Активен")
     card_parts.append(f"{_('admin_user_status_label', default='🛡 <b>Статус:</b>')} {ban_status}")
+    
+    # Balance info
+    balance = user.balance or 0.0
+    card_parts.append(f"{_('admin_user_balance_label', default='💰 <b>Баланс:</b>')} {hcode(f'{balance:.2f} ₽')}")
     
     # Referral info
     if user.referred_by_id:
@@ -275,6 +285,8 @@ async def user_action_handler(callback: types.CallbackQuery, state: FSMContext,
         await handle_reset_trial(callback, user, subscription_service, session, i18n, current_lang)
     elif action == "add_subscription":
         await handle_add_subscription_prompt(callback, state, user, i18n, current_lang)
+    elif action == "balance_management":
+        await handle_balance_management(callback, user, i18n, current_lang)
     elif action == "toggle_ban":
         await handle_toggle_ban(callback, user, panel_service, session, i18n, current_lang)
     elif action == "send_message":
@@ -932,3 +944,37 @@ async def process_unban_user_handler(message: types.Message, state: FSMContext,
         ))
     
     await state.clear()
+
+
+async def handle_balance_management(callback: types.CallbackQuery, user: User,
+                                  i18n_instance, lang: str):
+    """Handle balance management for a specific user"""
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    
+    try:
+        # Import balance admin handler
+        from bot.handlers.admin.balance_admin import handle_balance_management_callback
+        
+        # Create a mock callback with the user ID for balance management
+        class MockCallback:
+            def __init__(self, user_id: int):
+                self.data = f"admin_balance_management:{user_id}"
+                self.from_user = callback.from_user
+                self.message = callback.message
+                self.bot = callback.bot
+                self.answer = callback.answer
+        
+        mock_callback = MockCallback(user.user_id)
+        
+        # Call the balance management handler
+        await handle_balance_management_callback(
+            mock_callback, 
+            i18n_data={"current_language": lang, "i18n_instance": i18n_instance}
+        )
+        
+    except Exception as e:
+        logging.error(f"Error opening balance management for user {user.user_id}: {e}")
+        await callback.answer(_(
+            "admin_balance_management_error",
+            default="❌ Ошибка открытия управления балансом"
+        ), show_alert=True)
