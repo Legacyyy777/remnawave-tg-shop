@@ -32,7 +32,7 @@ async def handle_balance_callback(
         
         message_text = _("balance_info_title") + "\n\n" + _("balance_current_amount", balance=balance)
         
-        keyboard = get_balance_keyboard(lang, i18n, settings.TRIBUTE_BALANCE_URL)
+        keyboard = get_balance_keyboard(lang, i18n, settings.tribute_balance_url)
         
         await callback.message.edit_text(
             text=message_text,
@@ -71,7 +71,7 @@ async def handle_balance_command(
         
         message_text = _("balance_info_title") + "\n\n" + _("balance_current_amount", balance=balance)
         
-        keyboard = get_balance_keyboard(lang, i18n, settings.TRIBUTE_BALANCE_URL)
+        keyboard = get_balance_keyboard(lang, i18n, settings.tribute_balance_url)
         
         await message.answer(
             text=message_text,

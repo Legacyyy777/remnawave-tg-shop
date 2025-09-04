@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     TRIBUTE_SKIP_NOTIFICATIONS: bool = Field(default=True, description="Skip renewal notifications for Tribute payments")
     TRIBUTE_SKIP_CANCELLATION_NOTIFICATIONS: bool = Field(default=False, description="Skip cancellation notifications for Tribute payments")
     TRIBUTE_BALANCE_URL: Optional[str] = Field(default=None, description="Tribute URL for balance top-up")
+    TRIBUTE_TOPUP_URL: Optional[str] = Field(default=None, description="Tribute URL for balance top-up (alternative name)")
     PANEL_WEBHOOK_SECRET: Optional[str] = Field(default=None)
 
     SUBSCRIPTION_NOTIFICATIONS_ENABLED: bool = Field(default=True)
@@ -304,6 +305,12 @@ class Settings(BaseSettings):
         if self.REFERRAL_BONUS_DAYS_REFEREE_12_MONTHS is not None:
             bonuses[12] = self.REFERRAL_BONUS_DAYS_REFEREE_12_MONTHS
         return bonuses
+    
+    @computed_field
+    @property
+    def tribute_balance_url(self) -> Optional[str]:
+        """Get Tribute balance URL, supporting both TRIBUTE_BALANCE_URL and TRIBUTE_TOPUP_URL"""
+        return self.TRIBUTE_BALANCE_URL or self.TRIBUTE_TOPUP_URL
     
     # Logging Configuration
     LOG_CHAT_ID: Optional[int] = Field(default=None, description="Telegram chat/group ID for sending notifications")

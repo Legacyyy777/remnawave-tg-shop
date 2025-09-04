@@ -25,6 +25,7 @@ class BalanceManagementStates(StatesGroup):
 @router.callback_query(F.data == "admin_balance_management")
 async def handle_balance_management_callback(
     callback: CallbackQuery,
+    state: FSMContext,
     settings: Settings,
     **data
 ):
@@ -53,8 +54,6 @@ async def handle_balance_management_callback(
     )
     
     # Set state to wait for user input
-    from aiogram.fsm.context import FSMContext
-    state = FSMContext(callback.bot, callback.from_user.id, callback.message.chat.id)
     await state.set_state(BalanceManagementStates.waiting_for_user)
 
 
