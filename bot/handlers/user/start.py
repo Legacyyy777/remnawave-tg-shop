@@ -164,7 +164,8 @@ async def start_command_handler(message: types.Message,
             "language_code": current_lang,
             "referred_by_id": referred_by_user_id,
             "registration_date": datetime.now(timezone.utc),
-            "balance": 0.0
+            "balance": 0.0,
+            "terms_accepted": False
         }
         try:
             db_user, created = await user_dal.create_user(session, user_data_to_create)
@@ -226,6 +227,12 @@ async def start_command_handler(message: types.Message,
                     f"Failed to update existing user {user_id} in session: {e_update}",
                     exc_info=True)
 
+    # Check if user has accepted terms
+    if not db_user.terms_accepted:
+        from .terms import show_terms_acceptance
+        await show_terms_acceptance(message, settings, i18n_data, session)
+        return
+    
     # Send welcome message if not disabled
     if not settings.DISABLE_WELCOME_MESSAGE:
         await message.answer(_(key="welcome", user_name=hd.quote(user.full_name)))

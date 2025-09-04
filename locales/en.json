@@ -14,6 +14,14 @@
   "menu_support_button": "💬 Support",
   "menu_terms_button": "📄 Terms of Service",
 
+  "terms_acceptance_title": "📄 Terms of Service",
+  "terms_acceptance_message": "To use the bot, you must accept the terms of service.\n\nPlease review the terms and accept them to continue.",
+  "terms_accept_button": "✅ Accept Terms",
+  "terms_decline_button": "❌ Decline",
+  "terms_accepted_message": "✅ Terms accepted! Welcome!",
+  "terms_declined_message": "❌ You must accept the terms of service to use the bot. If you change your mind, just type /start",
+  "terms_already_accepted": "Terms already accepted.",
+
   "back_to_main_menu_button": "⬅️ Back",
 
   "choose_language": "Choose language:",

@@ -25,6 +25,7 @@ class User(Base):
                             ForeignKey("users.user_id"),
                             nullable=True)
     balance = Column(Float, default=0.0, nullable=False, index=True)
+    terms_accepted = Column(Boolean, default=False, nullable=False)
 
     referrer = relationship("User", remote_side=[user_id], backref="referrals")
     subscriptions = relationship("Subscription",

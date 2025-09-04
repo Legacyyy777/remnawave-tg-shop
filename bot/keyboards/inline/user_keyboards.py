@@ -70,11 +70,39 @@ def get_main_menu_inline_keyboard(
             InlineKeyboardButton(text=_(key="menu_support_button"),
                                  url=settings.SUPPORT_LINK))
 
+    return builder.as_markup()
+
+
+def get_terms_acceptance_keyboard(lang: str, i18n_instance, settings: Settings) -> InlineKeyboardMarkup:
+    """Create keyboard for terms acceptance."""
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    
+    # Accept button
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="terms_accept_button"),
+            callback_data="terms:accept"
+        )
+    )
+    
+    # Decline button
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="terms_decline_button"),
+            callback_data="terms:decline"
+        )
+    )
+    
+    # Link to terms if available
     if settings.TERMS_OF_SERVICE_URL:
         builder.row(
-            InlineKeyboardButton(text=_(key="menu_terms_button"),
-                                 url=settings.TERMS_OF_SERVICE_URL))
-
+            InlineKeyboardButton(
+                text=_(key="menu_terms_button"),
+                url=settings.TERMS_OF_SERVICE_URL
+            )
+        )
+    
     return builder.as_markup()
 
 
