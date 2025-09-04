@@ -119,6 +119,15 @@ async def select_subscription_period_callback_handler(
             pass
         return
 
+    # Get user balance
+    from db.dal import user_dal
+    user_balance = 0.0
+    try:
+        user_balance = await user_dal.get_user_balance(session, callback.from_user.id)
+    except Exception as e:
+        logging.error(f"Failed to get user balance: {e}")
+        user_balance = 0.0
+
     currency_symbol_val = settings.DEFAULT_CURRENCY_SYMBOL
     text_content = get_text("choose_payment_method")
     tribute_url = settings.tribute_payment_links.get(months)
@@ -132,6 +141,7 @@ async def select_subscription_period_callback_handler(
         current_lang,
         i18n,
         settings,
+        user_balance,
     )
 
     try:
@@ -195,6 +205,173 @@ async def pay_stars_callback_handler(
         await callback.answer()
     except Exception:
         pass
+
+
+@router.callback_query(F.data.startswith("pay_balance:"))
+async def pay_balance_callback_handler(
+        callback: types.CallbackQuery, settings: Settings, i18n_data: dict,
+        session: AsyncSession, bot: Bot, subscription_service: SubscriptionService,
+        referral_service: ReferralService, panel_service: PanelApiService):
+    """Handle payment with balance."""
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    if not i18n or not callback.message:
+        try:
+            await callback.answer(get_text("error_occurred_try_again"), show_alert=True)
+        except Exception:
+            pass
+        return
+
+    try:
+        _, data_payload = callback.data.split(":", 1)
+        months_str, price_str = data_payload.split(":")
+        months = int(months_str)
+        price = float(price_str)
+    except (ValueError, IndexError):
+        logging.error(f"Invalid pay_balance data in callback: {callback.data}")
+        try:
+            await callback.answer(get_text("error_try_again"), show_alert=True)
+        except Exception:
+            pass
+        return
+
+    user_id = callback.from_user.id
+    
+    # Check if user has sufficient balance
+    from bot.services.balance_service import BalanceService
+    balance_service = BalanceService(session)
+    
+    if not await balance_service.can_afford(user_id, price):
+        current_balance = await balance_service.get_balance(user_id)
+        await callback.message.edit_text(
+            get_text("balance_insufficient_funds", required=price, available=current_balance),
+            reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
+            parse_mode="HTML"
+        )
+        try:
+            await callback.answer()
+        except Exception:
+            pass
+        return
+
+    try:
+        # Create payment record
+        payment_data = {
+            "user_id": user_id,
+            "amount": price,
+            "currency": settings.DEFAULT_CURRENCY_SYMBOL,
+            "status": "succeeded",
+            "description": get_text("payment_description_subscription", months=months),
+            "subscription_duration_months": months,
+            "provider": "balance"
+        }
+        
+        payment = await payment_dal.create_payment(session, payment_data)
+        
+        # Deduct from balance
+        new_balance = await balance_service.subtract_balance(user_id, price)
+        
+        if new_balance is None:
+            await session.rollback()
+            await callback.message.edit_text(
+                get_text("balance_operation_failed"),
+                reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
+                parse_mode="HTML"
+            )
+            try:
+                await callback.answer()
+            except Exception:
+                pass
+            return
+
+        # Create subscription
+        subscription_result = await subscription_service.create_subscription(
+            session, user_id, months, payment.payment_id
+        )
+        
+        if not subscription_result:
+            await session.rollback()
+            await callback.message.edit_text(
+                get_text("error_occurred_try_again"),
+                reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
+                parse_mode="HTML"
+            )
+            try:
+                await callback.answer()
+            except Exception:
+                pass
+            return
+
+        # Apply referral bonuses if applicable
+        try:
+            await referral_service.apply_referral_bonuses(
+                session, user_id, months, payment.payment_id
+            )
+        except Exception as e:
+            logging.error(f"Error applying referral bonuses: {e}")
+
+        await session.commit()
+
+        # Get subscription details for display
+        active_subscription = await subscription_service.get_active_subscription_details(session, user_id)
+        config_link = active_subscription.get("config_link") if active_subscription else None
+        config_link = config_link or get_text("config_link_not_available")
+        
+        end_date = active_subscription.get("end_date") if active_subscription else None
+        end_date_str = end_date.strftime("%d.%m.%Y %H:%M:%S") if end_date else "N/A"
+
+        # Send success message
+        success_text = get_text(
+            "balance_purchase_success",
+            amount=price,
+            remaining=new_balance
+        ) + "\n\n" + get_text(
+            "payment_successful_full",
+            months=months,
+            end_date=end_date_str,
+            config_link=config_link
+        )
+
+        from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
+        await callback.message.edit_text(
+            success_text,
+            reply_markup=get_connect_and_main_keyboard(current_lang, i18n, settings, config_link),
+            parse_mode="HTML"
+        )
+
+        # Send notification
+        try:
+            from bot.services.notification_service import NotificationService
+            notification_service = NotificationService(bot, settings, i18n)
+            await notification_service.notify_payment_received(
+                user_id=user_id,
+                amount=price,
+                currency=settings.DEFAULT_CURRENCY_SYMBOL,
+                months=months,
+                payment_provider="Balance"
+            )
+        except Exception as e:
+            logging.error(f"Failed to send payment notification: {e}")
+
+        try:
+            await callback.answer()
+        except Exception:
+            pass
+
+    except Exception as e:
+        logging.error(f"Error processing balance payment: {e}")
+        await session.rollback()
+        await callback.message.edit_text(
+            get_text("balance_operation_failed"),
+            reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
+            parse_mode="HTML"
+        )
+        try:
+            await callback.answer()
+        except Exception:
+            pass
 
 
 @router.callback_query(F.data.startswith("pay_yk:"))

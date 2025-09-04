@@ -58,10 +58,12 @@ def get_user_management_keyboard(i18n_instance, lang: str) -> InlineKeyboardMark
                    callback_data="admin_action:users_management")
     builder.button(text=_(key="admin_ban_management_section"),
                    callback_data="admin_section:ban_management")
+    builder.button(text=_(key="admin_balance_management_section"),
+                   callback_data="admin_balance_management")
     
     builder.button(text=_(key="back_to_admin_panel_button"),
                    callback_data="admin_action:main")
-    builder.adjust(2, 1)
+    builder.adjust(2, 1, 1)
     return builder.as_markup()
 
 

@@ -42,7 +42,11 @@ def get_main_menu_inline_keyboard(
     promo_button = InlineKeyboardButton(
         text=_(key="menu_apply_promo_button"),
         callback_data="main_action:apply_promo")
+    balance_button = InlineKeyboardButton(
+        text=_(key="menu_balance_button"),
+        callback_data="main_action:balance")
     builder.row(referral_button, promo_button)
+    builder.row(balance_button)
 
     language_button = InlineKeyboardButton(
         text=_(key="menu_language_settings_inline"),
@@ -123,9 +127,16 @@ def get_payment_method_keyboard(months: int, price: float,
                                 tribute_url: Optional[str],
                                 stars_price: Optional[int],
                                 currency_symbol_val: str, lang: str,
-                                i18n_instance, settings: Settings) -> InlineKeyboardMarkup:
+                                i18n_instance, settings: Settings,
+                                user_balance: float = 0.0) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
+    
+    # Add balance payment option if user has sufficient funds
+    if user_balance >= price:
+        builder.button(text=_("pay_with_balance_button", amount=price, balance=user_balance),
+                       callback_data=f"pay_balance:{months}:{price}")
+    
     if settings.STARS_ENABLED and stars_price is not None:
         builder.button(text=_("pay_with_stars_button"),
                        callback_data=f"pay_stars:{months}:{stars_price}")
@@ -190,6 +201,25 @@ def get_user_banned_keyboard(support_link: Optional[str], lang: str,
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     builder.button(text=_(key="menu_support_button"), url=support_link)
+    return builder.as_markup()
+
+
+def get_balance_keyboard(lang: str, i18n_instance, tribute_url: Optional[str] = None) -> InlineKeyboardMarkup:
+    """Keyboard for balance management."""
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    
+    if tribute_url:
+        builder.button(
+            text=_(key="balance_top_up_button"),
+            url=tribute_url
+        )
+    
+    builder.button(
+        text=_(key="back_to_main_menu_button"),
+        callback_data="main_action:back_to_main"
+    )
+    builder.adjust(1)
     return builder.as_markup()
 
 

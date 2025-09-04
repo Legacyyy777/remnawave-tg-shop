@@ -403,6 +403,11 @@ async def main_action_callback_handler(
     elif action == "language":
 
         await language_command_handler(callback, i18n_data, settings)
+    elif action == "balance":
+        from . import balance as user_balance_handlers
+        await user_balance_handlers.handle_balance_callback(
+            callback, session, settings, i18n_data.get("i18n_instance")
+        )
     elif action == "back_to_main":
         await send_main_menu(callback,
                              settings,
