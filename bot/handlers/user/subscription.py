@@ -287,8 +287,8 @@ async def pay_balance_callback_handler(
             return
 
         # Create subscription
-        subscription_result = await subscription_service.create_subscription(
-            session, user_id, months, payment.payment_id
+        subscription_result = await subscription_service.activate_subscription(
+            session, user_id, months, price, payment.payment_id
         )
         
         if not subscription_result:
