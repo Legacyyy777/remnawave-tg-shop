@@ -87,7 +87,7 @@ sudo reboot
 
 ```bash
 # Клонирование репозитория
-git clone https://github.com/machka-pasla/remnawave-tg-shop.git
+git clone https://github.com/Legacyyy777/remnawave-tg-shop.git
 cd remnawave-tg-shop
 
 # Создание файла конфигурации
@@ -634,7 +634,7 @@ A: Нет, все миграции выполняются автоматичес
 
 - **Карты РФ и зарубежные:** [Tribute](https://t.me/tribute/app?startapp=dqdg)
 - **Crypto:** `USDT TRC-20 TT3SqBbfU4vYm6SUwUVNZsy278m2xbM4GE`
-- **Telegram:** [@your_support](https://t.me/your_support)
+- **Telegram:** [@Legacyyy777](https://t.me/Legacyyy777)
 
 ## 📄 Лицензия
 
